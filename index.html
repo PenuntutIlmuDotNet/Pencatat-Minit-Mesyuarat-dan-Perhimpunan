@@ -13,23 +13,42 @@
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-2 sm:px-4 py-8">
         <!-- Header -->
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-white mb-2">📝 Sistem Pencatatan Minit</h1>
             <p class="text-blue-100 text-lg">Mesyuarat & Perhimpunan Sekolah</p>
         </div>
 
+        <!-- Meeting Type Selection -->
+        <div id="meetingTypeSelection" class="max-w-2xl mx-auto mb-8">
+            <div class="bg-white rounded-2xl shadow-2xl p-8">
+                <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Pilih Jenis Minit</h2>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <button id="selectMesyuarat" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                        <div class="text-4xl mb-3">🏢</div>
+                        <h3 class="text-xl font-semibold mb-2">Minit Mesyuarat</h3>
+                        <p class="text-blue-100 text-sm">Untuk mesyuarat rasmi sekolah</p>
+                    </button>
+                    <button id="selectPerhimpunan" class="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 rounded-xl hover:from-purple-700 hover:to-purple-800 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                        <div class="text-4xl mb-3">👥</div>
+                        <h3 class="text-xl font-semibold mb-2">Minit Perhimpunan</h3>
+                        <p class="text-purple-100 text-sm">Untuk perhimpunan sekolah</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Form -->
-        <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+        <div id="mainForm" class="max-w-4xl mx-auto px-2 sm:px-0 bg-white rounded-2xl shadow-2xl overflow-hidden hidden">
+            <div id="formHeader" class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6">
                 <h2 class="text-2xl font-semibold text-white flex items-center">
                     <span class="mr-3">🎯</span>
-                    Borang Pencatatan Ucapan
+                    <span id="formTitle">Borang Pencatatan Ucapan</span>
                 </h2>
             </div>
 
-            <form id="meetingForm" class="p-8 space-y-6">
+            <form id="meetingForm" class="p-4 sm:p-8 space-y-6">
                 <!-- Row 1: Guru & Masa -->
                 <div class="grid md:grid-cols-2 gap-6">
                     <div>
@@ -129,6 +148,11 @@
                         Jana PDF / Cetak
                     </button>
                     
+                    <button id="backToSelection"
+                            class="w-full bg-gray-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                        🔄 Pilih Jenis Minit Lain
+                    </button>
+                    
                     <button id="closeModal"
                             class="w-full bg-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">
                         Tutup
@@ -149,12 +173,40 @@
     <script>
         // Global variables to store form data
         let currentFormData = {};
+        let selectedMeetingType = ''; // 'mesyuarat' or 'perhimpunan'
 
         // Google Apps Script Web App URL - SUDAH DIKEMAS KINI
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhdNtMHwX4exLEnLywhxQd46I8m_Lo4iJovz0DGTixdo6MXkzFzp3G7y0b-Dxin15L/exec';
 
-        // Set current date and time
-        document.addEventListener('DOMContentLoaded', function() {
+        // Meeting type selection handlers
+        document.getElementById('selectMesyuarat').addEventListener('click', function() {
+            selectedMeetingType = 'mesyuarat';
+            setupForm('mesyuarat');
+        });
+
+        document.getElementById('selectPerhimpunan').addEventListener('click', function() {
+            selectedMeetingType = 'perhimpunan';
+            setupForm('perhimpunan');
+        });
+
+        function setupForm(type) {
+            // Hide selection screen and show form
+            document.getElementById('meetingTypeSelection').classList.add('hidden');
+            document.getElementById('mainForm').classList.remove('hidden');
+            
+            // Update form styling and text based on type
+            const formHeader = document.getElementById('formHeader');
+            const formTitle = document.getElementById('formTitle');
+            
+            if (type === 'mesyuarat') {
+                formHeader.className = 'bg-gradient-to-r from-blue-600 to-blue-700 p-4 sm:p-6';
+                formTitle.innerHTML = '🏢 Borang Pencatatan Ucapan Mesyuarat';
+            } else {
+                formHeader.className = 'bg-gradient-to-r from-purple-600 to-purple-700 p-4 sm:p-6';
+                formTitle.innerHTML = '👥 Borang Pencatatan Ucapan Perhimpunan';
+            }
+            
+            // Set current date and time
             const now = new Date();
             document.getElementById('date').value = now.toISOString().split('T')[0];
             document.getElementById('time').value = now.toTimeString().slice(0, 5);
@@ -162,6 +214,11 @@
             // Auto-set day based on date
             const days = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
             document.getElementById('day').value = days[now.getDay()];
+        }
+
+        // Set current date and time
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial setup is now handled by meeting type selection
         });
 
         // Character counter for textarea
@@ -182,6 +239,7 @@
             
             // Collect form data
             currentFormData = {
+                meetingType: selectedMeetingType,
                 speakerName: document.getElementById('speakerName').value,
                 time: document.getElementById('time').value,
                 date: document.getElementById('date').value,
@@ -247,9 +305,12 @@
         });
 
         function formatWhatsAppMessage(data) {
-            return `📝 *CATATAN MINIT MESYUARAT*
+            const meetingTypeText = data.meetingType === 'mesyuarat' ? 'MESYUARAT' : 'PERHIMPUNAN';
+            const icon = data.meetingType === 'mesyuarat' ? '🏢' : '👥';
+            
+            return `📝 *CATATAN MINIT ${meetingTypeText}*
 
-👨‍🏫 *Guru:* ${data.speakerName}
+${icon} *Guru:* ${data.speakerName}
 📅 *Tarikh:* ${data.date} (${data.day})
 ⏰ *Masa:* ${data.time}
 ✍️ *Pencatat:* ${data.recorderName}
@@ -258,7 +319,7 @@
 ${data.speechNotes}
 
 ---
-_Dihantar melalui Sistem Pencatatan Minit_`;
+_Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingTypeText.slice(1).toLowerCase()}_`;
         }
 
         // PDF Generation - UPDATED FOR CANVA CODE COMPATIBILITY
@@ -269,12 +330,16 @@ _Dihantar melalui Sistem Pencatatan Minit_`;
         });
 
         function showPrintableVersion(data) {
+            const meetingTypeText = data.meetingType === 'mesyuarat' ? 'Mesyuarat' : 'Perhimpunan';
+            const icon = data.meetingType === 'mesyuarat' ? '🏢' : '👥';
+            const headerColor = data.meetingType === 'mesyuarat' ? '#007bff' : '#6f42c1';
+            
             const printContent = `
                 <!DOCTYPE html>
                 <html lang="ms">
                 <head>
                     <meta charset="UTF-8">
-                    <title>Catatan Minit - ${data.speakerName}</title>
+                    <title>Catatan Minit ${meetingTypeText} - ${data.speakerName}</title>
                     <style>
                         body { 
                             font-family: 'Times New Roman', serif; 
@@ -313,7 +378,7 @@ _Dihantar melalui Sistem Pencatatan Minit_`;
                         .notes { 
                             background: #f8f9fa; 
                             padding: 25px; 
-                            border-left: 5px solid #007bff; 
+                            border-left: 5px solid ${headerColor}; 
                             margin: 30px 0; 
                             border-radius: 5px;
                         }
@@ -371,12 +436,12 @@ _Dihantar melalui Sistem Pencatatan Minit_`;
                     </div>
                     
                     <div class="header">
-                        <h1>📝 Catatan Minit Mesyuarat</h1>
-                        <p style="margin: 10px 0 0 0; font-style: italic;">Mesyuarat & Perhimpunan Sekolah</p>
+                        <h1>${icon} Catatan Minit ${meetingTypeText}</h1>
+                        <p style="margin: 10px 0 0 0; font-style: italic;">${meetingTypeText} Sekolah</p>
                     </div>
                     
                     <div class="field">
-                        <div class="label">👨‍🏫 Guru Yang Berucap:</div>
+                        <div class="label">${icon} Guru Yang Berucap:</div>
                         <div class="value">${data.speakerName}</div>
                     </div>
                     
@@ -409,7 +474,7 @@ _Dihantar melalui Sistem Pencatatan Minit_`;
                             hour: '2-digit',
                             minute: '2-digit'
                         })}</p>
-                        <p style="margin-top: 10px;"><em>Sistem Pencatatan Minit Mesyuarat</em></p>
+                        <p style="margin-top: 10px;"><em>Sistem Pencatatan Minit ${meetingTypeText}</em></p>
                     </div>
                 </body>
                 </html>
@@ -428,6 +493,15 @@ _Dihantar melalui Sistem Pencatatan Minit_`;
             }
         }
 
+        // Back to selection
+        document.getElementById('backToSelection').addEventListener('click', function() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+            document.getElementById('mainForm').classList.add('hidden');
+            document.getElementById('meetingTypeSelection').classList.remove('hidden');
+            selectedMeetingType = '';
+        });
+
         // Close modal
         document.getElementById('closeModal').addEventListener('click', function() {
             document.getElementById('successModal').classList.add('hidden');
@@ -442,5 +516,5 @@ _Dihantar melalui Sistem Pencatatan Minit_`;
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d5414385b7aecd',t:'MTc1NzU3MzY3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d5551677c39fcd',t:'MTc1NzU3NDQ5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
