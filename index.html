@@ -18,6 +18,18 @@
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-white mb-2">📝 Sistem Pencatatan Minit</h1>
             <p class="text-blue-100 text-lg">Mesyuarat & Perhimpunan Sekolah</p>
+            
+            <!-- Facebook Follow Button -->
+            <div class="mt-6">
+                <a href="https://www.facebook.com/saifulsamat142/" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    <span class="animate-pulse">👍</span>
+                    <span class="ml-1">Follow Kami untuk Inovasi Terbaru!</span>
+                </a>
+            </div>
         </div>
 
         <!-- Meeting Type Selection -->
@@ -46,6 +58,14 @@
                     <span class="mr-3">🎯</span>
                     <span id="formTitle">Borang Pencatatan Ucapan</span>
                 </h2>
+            </div>
+
+            <!-- Back to Selection Button -->
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <button type="button" id="backToSelectionBtn" class="text-gray-600 hover:text-gray-800 flex items-center transition-colors">
+                    <span class="mr-2">←</span>
+                    Kembali ke Pilihan Jenis Minit
+                </button>
             </div>
 
             <form id="meetingForm" class="p-4 sm:p-8 space-y-6">
@@ -493,7 +513,17 @@ _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingT
             }
         }
 
-        // Back to selection
+        // Back to selection from form
+        document.getElementById('backToSelectionBtn').addEventListener('click', function() {
+            document.getElementById('mainForm').classList.add('hidden');
+            document.getElementById('meetingTypeSelection').classList.remove('hidden');
+            selectedMeetingType = '';
+            // Reset form
+            document.getElementById('meetingForm').reset();
+            document.getElementById('charCount').textContent = '0';
+        });
+
+        // Back to selection from modal
         document.getElementById('backToSelection').addEventListener('click', function() {
             document.getElementById('successModal').classList.add('hidden');
             document.getElementById('successModal').classList.remove('flex');
@@ -516,5 +546,5 @@ _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingT
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d5551677c39fcd',t:'MTc1NzU3NDQ5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98171172a4ed3cd8',t:'MTc1ODI2Mzc4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
