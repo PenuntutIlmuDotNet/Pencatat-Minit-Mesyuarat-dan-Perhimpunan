@@ -342,83 +342,103 @@ ${data.speechNotes}
 _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingTypeText.slice(1).toLowerCase()}_`;
         }
 
-        // PDF Generation - Direct Download
+        // PDF Generation - Using Activity Starter (Fixed)
         document.getElementById('generatePDF').addEventListener('click', function() {
-            generateAndDownloadPDF(currentFormData);
+            generatePDFWithActivityStarter(currentFormData);
         });
 
-        function generateAndDownloadPDF(data) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
+        function generatePDFWithActivityStarter(data) {
             const meetingTypeText = data.meetingType === 'mesyuarat' ? 'Mesyuarat' : 'Perhimpunan';
             const icon = data.meetingType === 'mesyuarat' ? '🏢' : '👥';
             
-            // Set font
-            doc.setFont('helvetica');
+            // Create formatted text content
+            const pdfContent = formatPDFContent(data, meetingTypeText, icon);
             
-            // Header
-            doc.setFontSize(18);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${icon} CATATAN MINIT ${meetingTypeText.toUpperCase()}`, 105, 25, { align: 'center' });
+            // Create file name
+            const fileName = `Minit_${meetingTypeText}_${data.speakerName.replace(/\s+/g, '_')}_${data.date}.txt`;
             
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`${meetingTypeText} Sekolah`, 105, 35, { align: 'center' });
-            
-            // Line separator
-            doc.setLineWidth(0.5);
-            doc.line(20, 45, 190, 45);
-            
-            // Content
-            let yPosition = 60;
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            
-            // Speaker
-            doc.text(`${icon} Guru Yang Berucap:`, 20, yPosition);
-            doc.setFont('helvetica', 'normal');
-            doc.text(data.speakerName, 70, yPosition);
-            yPosition += 15;
-            
-            // Date
-            doc.setFont('helvetica', 'bold');
-            doc.text('📅 Tarikh:', 20, yPosition);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`${data.date} (${data.day})`, 70, yPosition);
-            yPosition += 15;
-            
-            // Time
-            doc.setFont('helvetica', 'bold');
-            doc.text('⏰ Masa:', 20, yPosition);
-            doc.setFont('helvetica', 'normal');
-            doc.text(data.time, 70, yPosition);
-            yPosition += 15;
-            
-            // Recorder
-            doc.setFont('helvetica', 'bold');
-            doc.text('✍️ Nama Pencatat:', 20, yPosition);
-            doc.setFont('helvetica', 'normal');
-            doc.text(data.recorderName, 70, yPosition);
-            yPosition += 25;
-            
-            // Speech Notes
-            doc.setFont('helvetica', 'bold');
-            doc.text('📝 Catatan Ucapan:', 20, yPosition);
-            yPosition += 10;
-            
-            doc.setFont('helvetica', 'normal');
-            const splitText = doc.splitTextToSize(data.speechNotes, 170);
-            doc.text(splitText, 20, yPosition);
-            yPosition += splitText.length * 6 + 20;
-            
-            // Footer
-            doc.setLineWidth(0.3);
-            doc.line(20, yPosition, 190, yPosition);
-            yPosition += 10;
-            
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'italic');
+            try {
+                // Method 1: Try modern approach first
+                if (navigator.share && navigator.canShare) {
+                    const file = new File([pdfContent], fileName, { type: 'text/plain' });
+                    if (navigator.canShare({ files: [file] })) {
+                        navigator.share({
+                            files: [file],
+                            title: `Catatan Minit ${meetingTypeText}`,
+                            text: `Catatan minit untuk ${data.speakerName}`
+                        }).catch(() => {
+                            // Fallback if share fails
+                            fallbackDownload(pdfContent, fileName);
+                        });
+                        return;
+                    }
+                }
+                
+                // Method 2: Fallback download
+                fallbackDownload(pdfContent, fileName);
+                
+            } catch (error) {
+                console.log('Download error:', error);
+                // Method 3: Copy to clipboard as backup
+                copyToClipboard(pdfContent, fileName);
+            }
+        }
+
+        function fallbackDownload(content, fileName) {
+            try {
+                // Create data URI
+                const dataUri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
+                
+                // Create temporary link
+                const link = document.createElement('a');
+                link.href = dataUri;
+                link.download = fileName;
+                
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert(`📄 Fail "${fileName}" telah dimuat turun!\n\n✅ Berjaya! Sila semak folder Download anda.`);
+                
+            } catch (error) {
+                console.log('Fallback download failed:', error);
+                copyToClipboard(content, fileName);
+            }
+        }
+
+        function copyToClipboard(content, fileName) {
+            // Copy content to clipboard as final fallback
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(content).then(() => {
+                    alert(`📋 Kandungan telah disalin ke clipboard!\n\nSila:\n1. Buka aplikasi teks (Notes/Word)\n2. Paste (Ctrl+V)\n3. Simpan sebagai "${fileName}"`);
+                }).catch(() => {
+                    showContentModal(content, fileName);
+                });
+            } else {
+                showContentModal(content, fileName);
+            }
+        }
+
+        function showContentModal(content, fileName) {
+            // Show content in a modal for manual copy
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-96 overflow-hidden">
+                    <h3 class="text-lg font-bold mb-4">📄 Kandungan Fail: ${fileName}</h3>
+                    <textarea readonly class="w-full h-64 p-3 border rounded text-sm font-mono" onclick="this.select()">${content}</textarea>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Tutup</button>
+                        <button onclick="navigator.clipboard.writeText('${content.replace(/'/g, "\\'")}').then(() => alert('Disalin ke clipboard!'))" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Salin</button>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Klik pada teks untuk pilih semua, kemudian salin (Ctrl+C)</p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function formatPDFContent(data, meetingTypeText, icon) {
             const currentDateTime = new Date().toLocaleString('ms-MY', {
                 timeZone: 'Asia/Kuala_Lumpur',
                 year: 'numeric',
@@ -427,12 +447,34 @@ _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingT
                 hour: '2-digit',
                 minute: '2-digit'
             });
-            doc.text(`Dijana pada: ${currentDateTime}`, 105, yPosition, { align: 'center' });
-            doc.text(`Sistem Pencatatan Minit ${meetingTypeText}`, 105, yPosition + 8, { align: 'center' });
             
-            // Download PDF
-            const fileName = `Minit_${meetingTypeText}_${data.speakerName.replace(/\s+/g, '_')}_${data.date}.pdf`;
-            doc.save(fileName);
+            return `${icon} CATATAN MINIT ${meetingTypeText.toUpperCase()}
+${meetingTypeText} Sekolah
+
+===============================================
+
+${icon} Guru Yang Berucap: ${data.speakerName}
+📅 Tarikh: ${data.date} (${data.day})
+⏰ Masa: ${data.time}
+✍️ Nama Pencatat: ${data.recorderName}
+
+===============================================
+
+📝 CATATAN UCAPAN:
+
+${data.speechNotes}
+
+===============================================
+
+Dijana pada: ${currentDateTime}
+Sistem Pencatatan Minit ${meetingTypeText}
+
+---
+Untuk format PDF yang lebih cantik, sila buka fail ini dengan:
+• Microsoft Word / Google Docs
+• Aplikasi PDF converter
+• Print to PDF dari browser
+`;
         }
 
         function showPrintableVersion(data) {
@@ -632,5 +674,5 @@ _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingT
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9818a76a05d34bc5',t:'MTc1ODI4MDQwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'984ca46ef3640d0a',t:'MTc1ODgyNTU0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
