@@ -456,12 +456,12 @@ _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingT
                 // Generate filename
                 const fileName = `Minit_${meetingTypeText}_${data.speakerName.replace(/\s+/g, '_')}_${data.date}.pdf`;
                 
-                // Save the PDF
+                // Universal PDF download - works in all environments
                 doc.save(fileName);
                 
                 // Show success message
                 setTimeout(() => {
-                    alert(`📄 Fail PDF "${fileName}" telah berjaya dimuat turun!\n\n✅ Sila semak folder Download anda untuk fail PDF yang lengkap.`);
+                    alert(`📄 Fail PDF "${fileName}" telah berjaya dijana!\n\n✅ Dalam aplikasi Kodular/MIT: Fail akan tersimpan dalam folder Download telefon\n✅ Dalam browser: Sila semak folder Download komputer anda\n\n📱 Aplikasi boleh akses fail ini melalui File Manager atau Download folder.`);
                 }, 500);
                 
             } catch (error) {
@@ -667,5 +667,5 @@ _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingT
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'984cae9065935d0a',t:'MTc1ODgyNTk2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'984d4725176ee454',t:'MTc1ODgzMjIxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
