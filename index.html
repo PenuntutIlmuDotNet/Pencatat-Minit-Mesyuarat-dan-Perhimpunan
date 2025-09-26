@@ -342,12 +342,12 @@ ${data.speechNotes}
 _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingTypeText.slice(1).toLowerCase()}_`;
         }
 
-        // PDF Generation - Real PDF File
+        // PDF Generation - Compatible with MIT App Inventor & Kodular
         document.getElementById('generatePDF').addEventListener('click', function() {
-            generateRealPDF(currentFormData);
+            generateAppCompatiblePDF(currentFormData);
         });
 
-        function generateRealPDF(data) {
+        function generateAppCompatiblePDF(data) {
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
@@ -456,43 +456,56 @@ _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingT
                 // Generate filename
                 const fileName = `Minit_${meetingTypeText}_${data.speakerName.replace(/\s+/g, '_')}_${data.date}.pdf`;
                 
-                // Generate base64 string for Kodular/MIT App Inventor
-                var base64string = doc.output('datauristring');
+                // Check if running in mobile app WebViewer
+                const isInApp = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
+                               (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || 
+                                window.innerWidth < 768);
                 
-                // Check if running in Kodular/MIT App Inventor WebViewer
-                if (typeof Kodular !== 'undefined') {
-                    // Send base64 string to Kodular app
-                    Kodular.PostWebMessage(JSON.stringify({
-                        type: 'pdf_generated',
-                        fileName: fileName,
-                        base64Data: base64string,
-                        meetingType: meetingTypeText,
-                        speakerName: data.speakerName,
-                        date: data.date
-                    }));
+                if (isInApp) {
+                    // For mobile apps - create download link with blob
+                    const pdfBlob = doc.output('blob');
+                    const url = URL.createObjectURL(pdfBlob);
                     
-                    // Show success message for app users
-                    alert(`📱 PDF telah dihantar ke aplikasi!\n\n📄 Nama fail: ${fileName}\n✅ Aplikasi akan memproses fail PDF ini.`);
+                    // Create invisible download link
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    downloadLink.download = fileName;
+                    downloadLink.style.display = 'none';
                     
-                } else if (typeof AppInventor !== 'undefined') {
-                    // Send base64 string to MIT App Inventor
-                    AppInventor.setWebViewString(JSON.stringify({
-                        type: 'pdf_generated',
-                        fileName: fileName,
-                        base64Data: base64string,
-                        meetingType: meetingTypeText,
-                        speakerName: data.speakerName,
-                        date: data.date
-                    }));
+                    // Add to DOM, click, and remove
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
                     
-                    // Show success message for app users
-                    alert(`📱 PDF telah dihantar ke aplikasi MIT!\n\n📄 Nama fail: ${fileName}\n✅ Aplikasi akan memproses fail PDF ini.`);
+                    // Clean up blob URL
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    
+                    // Alternative method - try to trigger download via window.open
+                    setTimeout(() => {
+                        const pdfDataUri = doc.output('datauristring');
+                        const newWindow = window.open();
+                        if (newWindow) {
+                            newWindow.document.write(`
+                                <html>
+                                <head><title>${fileName}</title></head>
+                                <body style="margin:0;">
+                                    <iframe src="${pdfDataUri}" width="100%" height="100%" style="border:none;"></iframe>
+                                    <div style="position:fixed;top:10px;right:10px;background:white;padding:10px;border:1px solid #ccc;border-radius:5px;">
+                                        <a href="${pdfDataUri}" download="${fileName}" style="text-decoration:none;background:#007bff;color:white;padding:8px 16px;border-radius:3px;">📄 Muat Turun PDF</a>
+                                    </div>
+                                </body>
+                                </html>
+                            `);
+                            newWindow.document.close();
+                        }
+                    }, 500);
+                    
+                    alert(`📱 PDF dijana untuk aplikasi!\n\n📄 Nama fail: ${fileName}\n\n✅ Jika download tidak bermula secara automatik:\n• Sila semak tetapan download dalam aplikasi\n• Atau gunakan butang download dalam tab baru yang terbuka\n\n📁 Fail akan disimpan dalam folder Download telefon.`);
                     
                 } else {
-                    // Regular web browser - download normally
+                    // For regular browsers
                     doc.save(fileName);
                     
-                    // Show success message for web users
                     setTimeout(() => {
                         alert(`📄 Fail PDF "${fileName}" telah berjaya dimuat turun!\n\n✅ Sila semak folder Download anda untuk fail PDF yang lengkap.`);
                     }, 500);
@@ -500,7 +513,10 @@ _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingT
                 
             } catch (error) {
                 console.error('PDF generation error:', error);
-                alert('❌ Ralat menjana PDF. Sila cuba lagi atau gunakan butang cetak sebagai alternatif.');
+                
+                // Fallback - show printable version
+                alert('⚠️ Download PDF menghadapi masalah dalam aplikasi.\n\nSaya akan buka versi cetak sebagai alternatif.');
+                showPrintableVersion(data);
             }
         }
 
@@ -701,5 +717,5 @@ _Dihantar melalui Sistem Pencatatan Minit ${meetingTypeText.charAt(0) + meetingT
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'984d43acd272e454',t:'MTc1ODgzMjA2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'984fec50e6e49245',t:'MTc1ODg1OTk0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
